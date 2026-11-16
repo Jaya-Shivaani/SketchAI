@@ -1,0 +1,97 @@
+{
+  "best_parameters": {
+    "metric": "manhattan",
+    "n_neighbors": 3,
+    "weights": "uniform"
+  },
+  "cross_val_accuracy": 0.9996875,
+  "test_metrics": {
+    "accuracy": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "f1_weighted": 1.0
+  },
+  "confusion_matrix": [
+    [
+      160,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      160,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      160,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      160,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      160
+    ]
+  ],
+  "classification_report": {
+    "Animal": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 160.0
+    },
+    "Object": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 160.0
+    },
+    "Food": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 160.0
+    },
+    "Vehicle": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 160.0
+    },
+    "Nature": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 160.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 800.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 800.0
+    }
+  }
+}

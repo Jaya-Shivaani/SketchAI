@@ -1,0 +1,43 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug/test scripts
+check_db.py
+test_profile.py
+test_e2e.py
+
+# ML training data (large)
+ML/dataset/*.csv
+ML/dataset/*.npy
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+

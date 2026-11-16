@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SketchAI - Player Dashboard & Leaderboard</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-icon">🎨</span>
+      <span>SketchAI</span>
+    </div>
+    <nav class="nav-links">
+      <button class="theme-toggle-btn" title="Toggle Light / Dark Mode">
+        <span class="theme-toggle-icon">🌙</span>
+        <span class="theme-toggle-text">Dark</span>
+      </button>
+      <a href="/" class="nav-item">Lobby</a>
+      <a href="/dashboard" class="nav-item active">Dashboard</a>
+      <div id="nav-user-section" style="display:flex; align-items:center; gap:0.75rem;">
+        <!-- Populated dynamically by auth.js -->
+      </div>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+
+    <!-- User Profile Header -->
+    <div class="dashboard-header">
+      <div class="user-profile-header">
+        <div id="profile-avatar" class="profile-avatar-large">?</div>
+        <div>
+          <h1 id="profile-name" class="profile-name">Guest Player</h1>
+          <p class="profile-joined">Member of SketchAI Multiplayer Platform</p>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.75rem;">
+        <a href="/" class="btn btn-primary">🎮 Play Now</a>
+      </div>
+    </div>
+
+    <!-- Stats Cards Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="color:#ffd700;">⭐</div>
+        <div>
+          <div id="stat-total-score" class="stat-value">0</div>
+          <div class="stat-label">Total Points</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="color:#38bdf8;">🎮</div>
+        <div>
+          <div id="stat-games-played" class="stat-value">0</div>
+          <div class="stat-label">Games Played</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="color:#10b981;">🏆</div>
+        <div>
+          <div id="stat-games-won" class="stat-value">0</div>
+          <div class="stat-label">Victories</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="color:#ec4899;">📈</div>
+        <div>
+          <div id="stat-win-rate" class="stat-value">0%</div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="color:#a78bfa;">🎯</div>
+        <div>
+          <div id="stat-correct-guesses" class="stat-value">0</div>
+          <div class="stat-label">Correct Guesses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Columns: Global Leaderboard & Match History -->
+    <div class="dashboard-columns">
+
+      <!-- Column 1: Global Leaderboard -->
+      <div class="dash-panel">
+        <h2 class="panel-title">
+          <span>🏆</span>
+          <span>Global Leaderboard</span>
+        </h2>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Score</th>
+                <th>Won / Played</th>
+                <th>Win Rate</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <tr>
+                <td colspan="5" class="empty-state">Loading global rankings...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Column 2: Match History -->
+      <div class="dash-panel">
+        <h2 class="panel-title">
+          <span>📜</span>
+          <span>Your Match History</span>
+        </h2>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Room</th>
+                <th>Date</th>
+                <th>Winner</th>
+                <th>Your Score</th>
+              </tr>
+            </thead>
+            <tbody id="history-body">
+              <tr>
+                <td colspan="4" class="empty-state">Loading match history...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Log In to SketchAI</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="login-username" class="form-input" required placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-input" required placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Log In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="register-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Create an Account</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="register-form">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="reg-username" class="form-input" required placeholder="Pick a unique username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="reg-email" class="form-input" required placeholder="your.email@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-input" required placeholder="Min 6 characters">
+        </div>
+        <button type="submit" class="btn btn-accent" style="width:100%; margin-top:1rem;">Sign Up</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>AI-Enhanced Collaborative Drawing Game Platform &copy; 2026. Powered by FastAPI, scikit-learn (KNN), and Gemini API.</p>
+  </footer>
+
+  <script src="/static/js/api.js?v=2.5"></script>
+  <script src="/static/js/auth.js?v=2.5"></script>
+  <script src="/static/js/dashboard.js?v=2.5"></script>
+</body>
+</html>
+

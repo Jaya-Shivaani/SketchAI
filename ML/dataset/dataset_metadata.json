@@ -1,0 +1,18 @@
+{
+  "categories": [
+    "Animal",
+    "Object",
+    "Food",
+    "Vehicle",
+    "Nature"
+  ],
+  "category_counts": {
+    "Animal": 800,
+    "Object": 800,
+    "Food": 800,
+    "Vehicle": 800,
+    "Nature": 800
+  },
+  "total_samples": 4000,
+  "feature_count": 77
+}

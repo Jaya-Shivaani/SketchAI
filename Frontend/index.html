@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SketchAI - Collaborative Drawing Game</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-icon">🎨</span>
+      <span>SketchAI</span>
+    </div>
+    <nav class="nav-links">
+      <button class="theme-toggle-btn" title="Toggle Light / Dark Mode">
+        <span class="theme-toggle-icon">🌙</span>
+        <span class="theme-toggle-text">Dark</span>
+      </button>
+      <a href="/" class="nav-item active">Lobby</a>
+      <div id="nav-user-section" style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-secondary open-login-btn">Log In</button>
+        <button class="btn btn-primary open-register-btn">Sign Up</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="hero-container">
+    <div class="hero-header">
+      <h1 class="hero-title">
+        Collaborative Drawing, <br>
+        <span style="background:linear-gradient(135deg, #a78bfa, #38bdf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+          Powered by Machine Learning & AI
+        </span>
+      </h1>
+      <p class="hero-subtitle" id="hero-game-description">
+        Draw in real-time, guess your friends' sketches, and test your artistic flair against our live Machine Learning category classifier!
+      </p>
+    </div>
+
+    <!-- Quick Action Cards: Create & Join -->
+    <div class="cards-grid">
+      <!-- Create Room Card -->
+      <div class="feature-card">
+        <span class="card-icon">🚀</span>
+        <h2 class="card-title">Create a Game Room</h2>
+        <p class="card-desc">Start a new multiplayer room, customize the AI prompt category and round settings, and invite your friends!</p>
+        
+        <form id="create-room-form" style="margin-top:1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Category Theme</label>
+            <select id="room-category" class="form-select">
+              <option value="Random">🎲 Random (All 5 Categories)</option>
+              <option value="Animal">🐾 Animals (Cat, Dog, Bird...)</option>
+              <option value="Food">🍕 Food (Pizza, Cake, Apple...)</option>
+              <option value="Vehicle">🚗 Vehicles (Car, Airplane...)</option>
+              <option value="Nature">🌲 Nature (Tree, Sun, Mountain...)</option>
+              <option value="Object">☕ Objects (Cup, Clock, Chair...)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">AI Prompt Difficulty</label>
+            <select id="room-difficulty" class="form-select">
+              <option value="easy">Easy (Classic shapes)</option>
+              <option value="medium" selected>Medium (Creative poses)</option>
+              <option value="hard">Hard (Detailed challenges)</option>
+            </select>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Rounds</label>
+              <select id="room-rounds" class="form-select">
+                <option value="1">1 Round</option>
+                <option value="2">2 Rounds</option>
+                <option value="3" selected>3 Rounds</option>
+                <option value="5">5 Rounds</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time / Round</label>
+              <select id="room-duration" class="form-select">
+                <option value="45">45 Seconds</option>
+                <option value="60" selected>60 Seconds</option>
+                <option value="90">90 Seconds</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+            Create Room & Play
+          </button>
+        </form>
+      </div>
+
+      <!-- Join Room Card -->
+      <div class="feature-card">
+        <span class="card-icon">🔑</span>
+        <h2 class="card-title">Join Existing Room</h2>
+        <p class="card-desc">Have a room code from a friend? Enter it below to jump straight into the canvas battle!</p>
+
+        <form id="join-room-form" style="margin-top:1.25rem;">
+          <div class="form-group">
+            <label class="form-label">6-Character Room Code</label>
+            <input type="text" id="join-room-code" class="form-input" placeholder="e.g. SKETCH" maxlength="8" required style="text-transform:uppercase; font-weight:700; font-size:1.1rem; letter-spacing:1px;">
+          </div>
+          <button type="submit" class="btn btn-accent" style="width:100%; margin-top:1.8rem;">
+            Join Game Room
+          </button>
+        </form>
+
+        <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border-color);">
+          <h4 style="font-size:0.95rem; color:var(--text-muted); margin-bottom:0.75rem;">🌟 How to Play:</h4>
+          <ul style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; padding-left:1.2rem;">
+            <li>One player is chosen as the <strong>Drawer</strong> each round.</li>
+            <li>Other players type their guesses in the <strong>Chat</strong> box.</li>
+            <li>Earn bonus points the faster you guess the secret sketch!</li>
+            <li>Watch the <strong>AI Category Classifier</strong> predict live!</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Overview -->
+    <div class="cards-grid">
+      <div class="feature-card">
+        <span class="card-icon">🧠</span>
+        <h3 class="card-title">K-Nearest Neighbors (KNN) ML</h3>
+        <p class="card-desc">Trained on thousands of QuickDraw sketches across 5 categories: Animal, Object, Food, Vehicle, Nature. Evaluates stroke density, bounding box aspect ratios, and curvature in real time.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">✨</span>
+        <h3 class="card-title">Generative AI Prompts (Gemini)</h3>
+        <p class="card-desc">Every round features creative drawing prompts, fun thematic game descriptions, and unique constraints generated dynamically by Google Gemini LLM.</p>
+      </div>
+      <div class="feature-card">
+        <span class="card-icon">⚡</span>
+        <h3 class="card-title">Real-Time WebSockets & MongoDB</h3>
+        <p class="card-desc">Native FastAPI WebSockets broadcast every brush stroke instantaneously to all room members. Player ratings, histories, and leaderboards persist securely in MongoDB.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Log In to SketchAI</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="login-username" class="form-input" required placeholder="Enter your username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-input" required placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Log In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="register-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Create an Account</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="register-form">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="reg-username" class="form-input" required placeholder="Pick a unique username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="reg-email" class="form-input" required placeholder="your.email@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-input" required placeholder="Min 6 characters">
+        </div>
+        <button type="submit" class="btn btn-accent" style="width:100%; margin-top:1rem;">Sign Up</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>AI-Enhanced Collaborative Drawing Game Platform &copy; 2026. Built with FastAPI, WebSockets, scikit-learn (KNN), and Gemini API.</p>
+  </footer>
+
+  <script src="/static/js/api.js?v=2.5"></script>
+  <script src="/static/js/auth.js?v=2.5"></script>
+  <script>
+    // Handle create room
+    document.getElementById('create-room-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const category = document.getElementById('room-category').value;
+      const difficulty = document.getElementById('room-difficulty').value;
+      const rounds = parseInt(document.getElementById('room-rounds').value, 10);
+      const duration = parseInt(document.getElementById('room-duration').value, 10);
+
+      try {
+        const room = await api.createRoom({
+          category,
+          difficulty,
+          max_rounds: rounds,
+          round_duration: duration
+        });
+        showToast(`Room created: ${room.room_code}! Redirecting...`, 'success');
+        setTimeout(() => {
+          window.location.href = `/game?room=${room.room_code}`;
+        }, 800);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Handle join room
+    document.getElementById('join-room-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('join-room-code').value.trim().toUpperCase();
+      if (!code) return;
+
+      try {
+        const room = await api.joinRoom(code);
+        showToast(`Joining room ${room.room_code}...`, 'success');
+        setTimeout(() => {
+          window.location.href = `/game?room=${room.room_code}`;
+        }, 600);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Load AI game description
+    api.getGameDescription().then(data => {
+      if (data && data.description) {
+        document.getElementById('hero-game-description').textContent = data.description;
+      }
+    }).catch(() => {});
+  </script>
+</body>
+</html>
+
