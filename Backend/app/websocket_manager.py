@@ -255,6 +255,20 @@ class ConnectionManager:
                     logger.debug("Failed sending WS message to %s: %s", uname, e)
 
     # --- Live Stroke Broadcast & Real-Time ML Classification ---
+    async def handle_segment(self, room_code: str, username: str, segment_data: Dict[str, Any]):
+        room = self.get_room(room_code)
+        if not room:
+            return
+        if room.status == "playing":
+            drawer = room.get_drawer()
+            if not drawer or drawer.username != username:
+                return
+        # Broadcast continuous live drawing segment to guessers with zero lag
+        await self.broadcast_to_room(room.code, {
+            "type": "segment_broadcast",
+            "segment": segment_data
+        }, exclude_username=username)
+
     async def handle_stroke(self, room_code: str, username: str, stroke_data: Dict[str, Any]):
         room = self.get_room(room_code)
         if not room:

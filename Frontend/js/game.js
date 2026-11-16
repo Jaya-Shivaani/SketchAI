@@ -63,6 +63,11 @@ async function initGameRoom() {
   // Initialize Canvas
   const canvasElement = document.getElementById('drawing-canvas');
   canvas = new DrawingCanvas(canvasElement, {
+    onStrokeMove: (segmentData) => {
+      if (wsClient) {
+        wsClient.send('draw_segment', { segment: segmentData });
+      }
+    },
     onStrokeEnd: async (strokeData) => {
       if (wsClient) {
         wsClient.send('draw_stroke', { stroke: strokeData });
@@ -287,7 +292,14 @@ function setupWebSocketHandlers() {
     }
   });
 
-  // Remote stroke draw
+  // Continuous live drawing segment
+  wsClient.on('segment_broadcast', (data) => {
+    if (!isCurrentDrawer && canvas) {
+      canvas.drawRemoteSegment(data.segment);
+    }
+  });
+
+  // Remote stroke draw (ensures complete stroke accuracy)
   wsClient.on('stroke_broadcast', (data) => {
     if (!isCurrentDrawer && canvas) {
       canvas.drawRemoteStroke(data.stroke);

@@ -10,7 +10,7 @@ from datetime import datetime
 
 # --- Auth Schemas ---
 class UserRegister(BaseModel):
-    username: str = Field(..., min_length=3, max_length=25, pattern=r"^[a-zA-Z0-9_-]+$")
+    username: str = Field(..., min_length=3, max_length=25, pattern=r"^[a-zA-Z0-9_\s-]+$")
     email: str = Field(..., pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
     password: str = Field(..., min_length=6, max_length=100)
 

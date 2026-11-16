@@ -63,7 +63,14 @@ class APIClient {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const errorMsg = data.detail || data.message || `Request failed with status ${response.status}`;
+        let errorMsg = `Request failed with status ${response.status}`;
+        if (typeof data.detail === 'string') {
+          errorMsg = data.detail;
+        } else if (Array.isArray(data.detail) && data.detail.length > 0) {
+          errorMsg = data.detail.map(d => d.msg || d.message || JSON.stringify(d)).join(', ');
+        } else if (data.message) {
+          errorMsg = data.message;
+        }
         throw new Error(errorMsg);
       }
 

@@ -52,7 +52,11 @@ async def room_websocket_endpoint(
 
             msg_type = msg.get("type")
 
-            if msg_type == "draw_stroke":
+            if msg_type == "draw_segment":
+                segment_data = msg.get("segment", {})
+                await connection_manager.handle_segment(code, player_name, segment_data)
+
+            elif msg_type == "draw_stroke":
                 stroke_data = msg.get("stroke", {})
                 await connection_manager.handle_stroke(code, player_name, stroke_data)
 

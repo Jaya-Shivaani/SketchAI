@@ -23,6 +23,7 @@ class DrawingCanvas {
 
     // Callbacks
     this.onStrokeEnd = options.onStrokeEnd || null;
+    this.onStrokeMove = options.onStrokeMove || null;
     this.onClear = options.onClear || null;
 
     this.initCanvasSize();
@@ -89,6 +90,7 @@ class DrawingCanvas {
       this.ctx.stroke();
     };
 
+    let lastMoveBroadcast = 0;
     const drawMove = (e) => {
       if (!this.isDrawing || !this.isInteractive) return;
       e.preventDefault();
@@ -98,6 +100,18 @@ class DrawingCanvas {
 
       this.ctx.lineTo(coords.x, coords.y);
       this.ctx.stroke();
+
+      // Real-time live stroke streaming to guessers (every ~40ms = 25fps)
+      const now = performance.now();
+      if (this.onStrokeMove && now - lastMoveBroadcast > 40) {
+        lastMoveBroadcast = now;
+        this.onStrokeMove({
+          points: this.currentStrokePoints.slice(-5), // send recent segment
+          color: this.currentTool === 'eraser' ? '#ffffff' : this.currentColor,
+          size: this.currentTool === 'eraser' ? this.currentSize * 2.5 : this.currentSize,
+          tool: this.currentTool
+        });
+      }
     };
 
     const endDraw = (e) => {
@@ -131,6 +145,29 @@ class DrawingCanvas {
     this.canvas.addEventListener('touchstart', startDraw, { passive: false });
     window.addEventListener('touchmove', drawMove, { passive: false });
     window.addEventListener('touchend', endDraw);
+  }
+
+  drawRemoteSegment(segmentData) {
+    const points = segmentData.points;
+    if (!points || points.length === 0) return;
+
+    this.ctx.save();
+    this.ctx.strokeStyle = segmentData.color || '#1e293b';
+    this.ctx.lineWidth = segmentData.size || 4;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(points[0][0], points[0][1]);
+    for (let i = 1; i < points.length; i++) {
+      this.ctx.lineTo(points[i][0], points[i][1]);
+    }
+    if (points.length === 1) {
+      this.ctx.lineTo(points[0][0] + 0.1, points[0][1] + 0.1);
+    }
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.restore();
   }
 
   drawRemoteStroke(strokeData) {
