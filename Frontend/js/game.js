@@ -10,7 +10,7 @@ let isCurrentDrawer = false;
 let isHost = false;
 let currentRoomStatus = 'lobby';
 
-window.startGameNow = async function() {
+window.startGameNow = async function () {
   console.log('[Game] Starting Round 1...');
   showToast('🚀 Starting Round 1...', 'info');
 
@@ -418,9 +418,9 @@ function handleRoomState(state) {
   // ALWAYS treat the connected user as host in lobby (simplifies single-player flow)
   // Also check username match, alone in room, or placeholder Host_XXX host name
   isHost = (state.status === 'lobby') ||
-           (currentUser && currentUser.username === state.host) ||
-           (!state.players || state.players.length <= 1) ||
-           (state.host && state.host.startsWith('Host_'));
+    (currentUser && currentUser.username === state.host) ||
+    (!state.players || state.players.length <= 1) ||
+    (state.host && state.host.startsWith('Host_'));
 
   // Update round indicator
   const roundEl = document.getElementById('round-indicator');
