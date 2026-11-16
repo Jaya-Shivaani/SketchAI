@@ -35,10 +35,11 @@ The **AI-Enhanced Collaborative Drawing Game Platform** addresses these challeng
 - **Ultra-Low Latency Full-Duplex Real-Time Sync**: Native FastAPI WebSockets synchronize vector strokes, timer countdowns, and guess evaluation with sub-millisecond local latency.
 - **Persistent Stats & History**: Asynchronous MongoDB storage logs match history, player wins, guess accuracy, and global leaderboards.
 
-#### 1.3 Live Cloud Deployment
-The entire platform is deployed and publicly accessible in production on Render:
+#### 1.3 Live Cloud Deployment & Project Demo Video
+The entire platform is deployed, publicly accessible in production on Render, and comprehensively presented in the project demonstration video:
 - **Production URL**: [https://sketchai-idfq.onrender.com](https://sketchai-idfq.onrender.com)
 - **Interactive OpenAPI/Swagger Documentation**: [https://sketchai-idfq.onrender.com/docs](https://sketchai-idfq.onrender.com/docs)
+- **Project Walkthrough & Demo Video**: [https://drive.google.com/file/d/1fKyi-FXiVecvxO0b6gJg-sLDhskQXWq4/view?usp=sharing](https://drive.google.com/file/d/1fKyi-FXiVecvxO0b6gJg-sLDhskQXWq4/view?usp=sharing)
 - **Architecture**: Linux Cloud Web Service with native WebSocket support, in-memory fault tolerance, and embedded scikit-learn ML inference.
 
 ---
