@@ -3,7 +3,9 @@
  * Handles all backend HTTP communications, authorization tokens, and toast notifications.
  */
 
-const API_BASE = window.location.origin.includes('http') ? window.location.origin : 'http://localhost:8000';
+const API_BASE = (window.location.origin && window.location.origin.startsWith('http') && !window.location.origin.includes('file:')) 
+  ? window.location.origin 
+  : 'https://sketchai-idfq.onrender.com';
 
 class APIClient {
   constructor() {

@@ -15,8 +15,9 @@ class GameWebSocket {
   }
 
   connect() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : (isLocal ? 'ws:' : 'wss:');
+    const host = window.location.host || 'sketchai-idfq.onrender.com';
     let url = `${protocol}//${host}/ws/room/${this.roomCode}?username=${encodeURIComponent(this.username)}`;
     if (this.token) {
       url += `&token=${encodeURIComponent(this.token)}`;

@@ -1,10 +1,14 @@
 # 🎨 AI-Enhanced Collaborative Drawing Game Platform
 
+[![Live Demo](https://img.shields.io/badge/Render-Live%20Demo-brightgreen.svg?logo=render&logoColor=white)](https://sketchai-idfq.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-KNN-orange.svg)](https://scikit-learn.org/)
 [![Gemini](https://img.shields.io/badge/Gemini-LLM%20API-blueviolet.svg)](https://ai.google.dev/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Async%20Motor-green.svg)](https://www.mongodb.com/)
+
+> 🌐 **Live Cloud Deployment**: [https://sketchai-idfq.onrender.com](https://sketchai-idfq.onrender.com)  
+> *Experience real-time collaborative sketch guessing with live ML classification directly in your browser without local installation!*
 
 A real-time multiplayer drawing and guessing game platform powered by **Machine Learning (K-Nearest Neighbors)** for live sketch classification and **Generative AI (Google Gemini LLM)** for dynamic prompt generation and creative game challenges.
 
@@ -173,9 +177,17 @@ python ML/evaluate_model.py
 jupyter lab ML/drawing_classification_knn.ipynb
 ```
 
-### 5. Starting the Full-Stack Application
+### 5. Running the Application
 
-The platform includes **zero-friction startup scripts** designed so any mentor or evaluator can run the application with **a single command or double-click**:
+#### 🌐 Option 0: Instant Cloud Access (Zero Installation)
+The full stack application is deployed live in production on Render:
+- **Live Game App**: [https://sketchai-idfq.onrender.com](https://sketchai-idfq.onrender.com)
+- **Live Swagger API Docs**: [https://sketchai-idfq.onrender.com/docs](https://sketchai-idfq.onrender.com/docs)
+- **Status**: Active 24/7 with WebSocket multiplayer streaming, in-memory resilient fallback, and scikit-learn ML inference.
+
+---
+
+The platform also includes **zero-friction local startup scripts** designed so any mentor or evaluator can run the application with **a single command or double-click**:
 
 #### 🌟 Option 1: One-Click Startup (Recommended for Mentors / Windows)
 Simply double-click **`run.bat`** in the project folder, or run in your terminal:
