@@ -579,7 +579,10 @@ body::after {
   50% { filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.45)); }
 }
 
-/* Footer */
+.navbar, .hero-container, .modal-overlay, footer {
+  position: relative;
+  z-index: 10;
+}
 footer {
   margin-top: auto;
   padding: 2rem;

@@ -11,6 +11,9 @@
 </head>
 <body>
 
+  <!-- Background Floating Animated Particles Canvas -->
+  <canvas id="bg-particle-canvas" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:0;"></canvas>
+
   <!-- Navigation Bar -->
   <header class="navbar">
     <div class="brand">
@@ -248,6 +251,76 @@
         document.getElementById('hero-game-description').textContent = data.description;
       }
     }).catch(() => {});
+
+    // --- Interactive Floating Animated Drawing Particles Canvas ---
+    (function initParticleCanvas() {
+      const canvas = document.getElementById('bg-particle-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w, h;
+      function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const particles = [];
+      const colors = ['rgba(167, 139, 250, 0.45)', 'rgba(56, 189, 248, 0.45)', 'rgba(236, 72, 153, 0.4)', 'rgba(251, 191, 36, 0.35)'];
+      for (let i = 0; i < 45; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 4 + 2,
+          dx: (Math.random() - 0.5) * 0.9,
+          dy: (Math.random() - 0.5) * 0.9,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          angle: Math.random() * Math.PI * 2,
+          speed: Math.random() * 0.02 + 0.01
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw connections between close particles
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+            if (dist < 130) {
+              ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 * (1 - dist / 130)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw and update particles
+        particles.forEach(p => {
+          p.x += p.dx;
+          p.y += p.dy;
+          p.angle += p.speed;
+
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h;
+          if (p.y > h) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r + Math.sin(p.angle) * 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = p.color;
+          ctx.fill();
+        });
+
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
   </script>
 </body>
 </html>
