@@ -296,8 +296,8 @@ class ConnectionManager:
             ys = [pt[1] for pt in points]
             room.strokes.append([xs, ys])
 
-            # Trigger real ML prediction on every stroke
-            prediction = ml_service.predict_drawing(strokes=room.strokes)
+            # Trigger real ML prediction on every stroke — run in thread pool to avoid blocking event loop
+            prediction = await asyncio.to_thread(ml_service.predict_drawing, strokes=room.strokes)
             room.ai_prediction = prediction
 
             # Broadcast live AI prediction badge to all players in the room
@@ -306,9 +306,10 @@ class ConnectionManager:
                 "prediction": prediction
             })
 
-            # Real-Time Anti-Cheat OCR Inspection during active round
-            if room.status == "playing" and len(room.raw_strokes_data) >= 3 and len(room.raw_strokes_data) % 2 == 0:
-                is_cheat, detected_word, cheat_conf = anti_cheat_service.check_spoiler_cheating(
+            # Real-Time Anti-Cheat OCR Inspection — run every 5th stroke (not 2nd) to reduce OCR load
+            if room.status == "playing" and len(room.raw_strokes_data) >= 5 and len(room.raw_strokes_data) % 5 == 0:
+                is_cheat, detected_word, cheat_conf = await asyncio.to_thread(
+                    anti_cheat_service.check_spoiler_cheating,
                     room.raw_strokes_data,
                     room.current_word
                 )
