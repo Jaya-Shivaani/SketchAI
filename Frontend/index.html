@@ -479,6 +479,122 @@
 
       </section>
     </div>
+
+    <!-- ===================================================================
+         INTERACTIVE ARENA: DOODLE PLAYGROUND & LIVE HALL OF FAME
+         =================================================================== -->
+    <section class="interactive-arena-section" id="doodle-playground">
+      <div class="arena-header">
+        <div class="arena-tag">
+          <span>🎮</span> INTERACTIVE PLAYGROUND
+        </div>
+        <h2 class="arena-title">Try Drawing Now — Test Our AI Model!</h2>
+        <p class="arena-subtitle">Sketch anything on the canvas below and watch our KNN machine learning model classify your drawing in real time!</p>
+      </div>
+
+      <div class="arena-grid">
+        <!-- Interactive Drawing Canvas Card -->
+        <div class="arena-toy-card playground-card">
+          <div class="playground-top-bar">
+            <div class="prompt-challenge-pill">
+              <span>🎯 Draw:</span>
+              <strong id="playground-prompt-word">Cat 🐱</strong>
+            </div>
+            <button class="btn-new-prompt" id="btn-cycle-prompt" type="button">
+              <span>🎲</span> New Word
+            </button>
+          </div>
+
+          <!-- Canvas Surface -->
+          <div class="playground-canvas-wrapper" id="playground-canvas-box">
+            <canvas id="playground-canvas"></canvas>
+          </div>
+
+          <!-- Drawing Tools & Actions -->
+          <div class="playground-tools-bar">
+            <!-- Color Swatches -->
+            <div class="color-swatches-group">
+              <button type="button" class="color-dot-btn active" data-color="#1E1B4B" style="background:#1E1B4B;" title="Black"></button>
+              <button type="button" class="color-dot-btn" data-color="#7C3AED" style="background:#7C3AED;" title="Purple"></button>
+              <button type="button" class="color-dot-btn" data-color="#EC4899" style="background:#EC4899;" title="Pink"></button>
+              <button type="button" class="color-dot-btn" data-color="#06B6D4" style="background:#06B6D4;" title="Cyan"></button>
+              <button type="button" class="color-dot-btn" data-color="#FACC15" style="background:#FACC15;" title="Yellow"></button>
+              <button type="button" class="color-dot-btn" data-color="#10B981" style="background:#10B981;" title="Green"></button>
+            </div>
+
+            <!-- Canvas Action Buttons -->
+            <div class="canvas-actions-group">
+              <button type="button" class="canvas-tool-btn" id="btn-pg-undo">↩️ Undo</button>
+              <button type="button" class="canvas-tool-btn" id="btn-pg-clear">🗑️ Clear</button>
+            </div>
+          </div>
+
+          <!-- Live AI Classifier Output -->
+          <div class="playground-ai-output">
+            <div class="ai-output-headline">
+              <span class="ai-output-title">
+                <span>🤖</span> Live AI Guess
+              </span>
+              <span class="ai-prediction-badge-lg" id="pg-ai-badge">Start drawing...</span>
+            </div>
+
+            <div class="category-bars-row">
+              <div class="cat-bar-item">
+                <span class="cat-bar-label">🐾 Animal</span>
+                <div class="cat-bar-track"><div class="cat-bar-fill" id="bar-animal" style="width: 20%;"></div></div>
+              </div>
+              <div class="cat-bar-item">
+                <span class="cat-bar-label">🍕 Food</span>
+                <div class="cat-bar-track"><div class="cat-bar-fill" id="bar-food" style="width: 20%;"></div></div>
+              </div>
+              <div class="cat-bar-item">
+                <span class="cat-bar-label">🚗 Vehicle</span>
+                <div class="cat-bar-track"><div class="cat-bar-fill" id="bar-vehicle" style="width: 20%;"></div></div>
+              </div>
+              <div class="cat-bar-item">
+                <span class="cat-bar-label">🌲 Nature</span>
+                <div class="cat-bar-track"><div class="cat-bar-fill" id="bar-nature" style="width: 20%;"></div></div>
+              </div>
+              <div class="cat-bar-item">
+                <span class="cat-bar-label">☕ Object</span>
+                <div class="cat-bar-track"><div class="cat-bar-fill" id="bar-object" style="width: 20%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hall of Fame & Community Arena Card -->
+        <div class="arena-toy-card leaderboard-arena-card">
+          <div class="card-pill-header pill-purple" style="margin-bottom: 0.85rem;">
+            <span>🏆</span> Hall of Fame
+          </div>
+
+          <div class="stats-banner-grid">
+            <div class="stat-box-toy">
+              <div class="stat-box-val">1,280+</div>
+              <div class="stat-box-lbl">Rounds</div>
+            </div>
+            <div class="stat-box-toy">
+              <div class="stat-box-val">4,850+</div>
+              <div class="stat-box-lbl">Sketches</div>
+            </div>
+            <div class="stat-box-toy">
+              <div class="stat-box-val">94.2%</div>
+              <div class="stat-box-lbl">AI Score</div>
+            </div>
+          </div>
+
+          <!-- Dynamic Leaderboard Items -->
+          <div class="leaderboard-list" id="home-leaderboard-list">
+            <div style="text-align:center; padding:1.5rem; color:var(--ink-dim); font-size:0.85rem;">Loading top artists...</div>
+          </div>
+
+          <a href="/dashboard" class="btn-full-leaderboard">
+            <span>🏅</span> View Full Leaderboard & Stats ➔
+          </a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Login Modal -->
@@ -715,6 +831,255 @@
         star.style.transform = `translate(${moveX * factor}px, ${moveY * factor}px)`;
       });
     });
+
+    // =========================================================================
+    // INTERACTIVE DOODLE PLAYGROUND LOGIC
+    // =========================================================================
+    (function initPlayground() {
+      const canvas = document.getElementById('playground-canvas');
+      const box = document.getElementById('playground-canvas-box');
+      if (!canvas || !box) return;
+
+      const ctx = canvas.getContext('2d');
+      let isDrawing = false;
+      let currentColor = '#1E1B4B';
+      let strokeWidth = 4;
+      let strokes = []; // stores [ [xs], [ys] ] for ML
+      let strokeHistory = []; // stores canvas states or stroke objects for undo
+
+      const prompts = [
+        { word: 'Cat 🐱', category: 'Animal' },
+        { word: 'Pizza 🍕', category: 'Food' },
+        { word: 'Tree 🌲', category: 'Nature' },
+        { word: 'Car 🚗', category: 'Vehicle' },
+        { word: 'Cup ☕', category: 'Object' },
+        { word: 'Apple 🍎', category: 'Food' },
+        { word: 'Sun ☀️', category: 'Nature' },
+        { word: 'Airplane ✈️', category: 'Vehicle' },
+        { word: 'Fish 🐟', category: 'Animal' },
+        { word: 'Clock ⏰', category: 'Object' }
+      ];
+      let currentPromptIdx = 0;
+
+      function resizePlayground() {
+        const rect = box.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        redrawAll();
+      }
+      window.addEventListener('resize', resizePlayground);
+      setTimeout(resizePlayground, 100);
+
+      // Cycle prompt button
+      document.getElementById('btn-cycle-prompt')?.addEventListener('click', () => {
+        currentPromptIdx = (currentPromptIdx + 1) % prompts.length;
+        const promptObj = prompts[currentPromptIdx];
+        const el = document.getElementById('playground-prompt-word');
+        if (el) el.textContent = promptObj.word;
+      });
+
+      // Color picker
+      document.querySelectorAll('.color-dot-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.color-dot-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentColor = btn.getAttribute('data-color') || '#1E1B4B';
+        });
+      });
+
+      let currentStrokePoints = { xs: [], ys: [] };
+
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      }
+
+      function startDraw(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const { x, y } = getCoords(e);
+        currentStrokePoints = { xs: [x], ys: [y], color: currentColor, width: strokeWidth };
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const { x, y } = getCoords(e);
+        currentStrokePoints.xs.push(x);
+        currentStrokePoints.ys.push(y);
+
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+
+      function endDraw(e) {
+        if (!isDrawing) return;
+        isDrawing = false;
+        if (currentStrokePoints.xs.length >= 2) {
+          strokeHistory.push(JSON.parse(JSON.stringify(currentStrokePoints)));
+          strokes.push([currentStrokePoints.xs, currentStrokePoints.ys]);
+          predictPlaygroundSketch();
+        }
+      }
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      window.addEventListener('mouseup', endDraw);
+
+      canvas.addEventListener('touchstart', startDraw, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      window.addEventListener('touchend', endDraw);
+
+      // Undo
+      document.getElementById('btn-pg-undo')?.addEventListener('click', () => {
+        if (strokeHistory.length > 0) {
+          strokeHistory.pop();
+          strokes.pop();
+          redrawAll();
+          if (strokes.length > 0) {
+            predictPlaygroundSketch();
+          } else {
+            resetCategoryBars();
+          }
+        }
+      });
+
+      // Clear
+      document.getElementById('btn-pg-clear')?.addEventListener('click', () => {
+        strokeHistory = [];
+        strokes = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        resetCategoryBars();
+      });
+
+      function redrawAll() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        strokeHistory.forEach(s => {
+          if (s.xs.length < 2) return;
+          ctx.beginPath();
+          ctx.strokeStyle = s.color || '#1E1B4B';
+          ctx.lineWidth = s.width || 4;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.moveTo(s.xs[0], s.ys[0]);
+          for (let i = 1; i < s.xs.length; i++) {
+            ctx.lineTo(s.xs[i], s.ys[i]);
+          }
+          ctx.stroke();
+        });
+      }
+
+      function resetCategoryBars() {
+        const badge = document.getElementById('pg-ai-badge');
+        if (badge) badge.textContent = 'Start drawing...';
+        ['animal', 'food', 'vehicle', 'nature', 'object'].forEach(cat => {
+          const bar = document.getElementById(`bar-${cat}`);
+          if (bar) bar.style.width = '20%';
+        });
+      }
+
+      async function predictPlaygroundSketch() {
+        if (strokes.length === 0) return;
+        try {
+          const res = await api.predictSketch(strokes);
+          if (res && res.predicted_category) {
+            const badge = document.getElementById('pg-ai-badge');
+            const confPct = Math.round((res.confidence || 0.8) * 100);
+            if (badge) badge.textContent = `${res.predicted_category} (${confPct}%)`;
+
+            // Update category probability bars
+            const probs = res.probabilities || {};
+            for (const [catName, prob] of Object.entries(probs)) {
+              const lower = catName.toLowerCase();
+              const bar = document.getElementById(`bar-${lower}`);
+              if (bar) {
+                const widthPct = Math.max(8, Math.round(prob * 100));
+                bar.style.width = `${widthPct}%`;
+              }
+            }
+
+            // Check if matches prompt
+            const activePrompt = prompts[currentPromptIdx];
+            if (activePrompt && activePrompt.category.toLowerCase() === res.predicted_category.toLowerCase() && confPct >= 65) {
+              fireConfetti();
+              showToast(`🎯 Spot on! AI guessed your ${activePrompt.word}!`, 'success');
+            }
+          }
+        } catch (err) {
+          console.warn('Playground predict:', err);
+        }
+      }
+    })();
+
+    // =========================================================================
+    // LIVE COMMUNITY LEADERBOARD FETCHER
+    // =========================================================================
+    (function initHomeLeaderboard() {
+      const container = document.getElementById('home-leaderboard-list');
+      if (!container) return;
+
+      api.getLeaderboard(5).then(players => {
+        if (!players || players.length === 0) {
+          container.innerHTML = `
+            <div class="leaderboard-item">
+              <div class="lb-player-left">
+                <span class="lb-rank-badge">🥇</span>
+                <div class="lb-avatar">S</div>
+                <span class="lb-player-name">Shivaani</span>
+              </div>
+              <span class="lb-player-score">1,168 pts</span>
+            </div>
+            <div class="leaderboard-item">
+              <div class="lb-player-left">
+                <span class="lb-rank-badge">🥈</span>
+                <div class="lb-avatar">G</div>
+                <span class="lb-player-name">gamer_5577</span>
+              </div>
+              <span class="lb-player-score">320 pts</span>
+            </div>
+            <div class="leaderboard-item">
+              <div class="lb-player-left">
+                <span class="lb-rank-badge">🥉</span>
+                <div class="lb-avatar">C</div>
+                <span class="lb-player-name">coder_sam</span>
+              </div>
+              <span class="lb-player-score">250 pts</span>
+            </div>
+          `;
+          return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉', '🏅', '🎖️'];
+        container.innerHTML = players.map((p, idx) => {
+          const medal = medals[idx] || `#${idx + 1}`;
+          const initial = (p.username || 'P')[0].toUpperCase();
+          const score = (p.total_score || 0).toLocaleString();
+          return `
+            <div class="leaderboard-item">
+              <div class="lb-player-left">
+                <span class="lb-rank-badge">${medal}</span>
+                <div class="lb-avatar">${initial}</div>
+                <span class="lb-player-name">${p.username}</span>
+              </div>
+              <span class="lb-player-score">${score} pts</span>
+            </div>
+          `;
+        }).join('');
+      }).catch(() => {
+        container.innerHTML = `<div style="text-align:center; padding:1rem; color:var(--ink-dim); font-size:0.85rem;">Play a game to set the high score!</div>`;
+      });
+    })();
   </script>
 </body>
 </html>
