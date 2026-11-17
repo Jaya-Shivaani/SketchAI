@@ -195,7 +195,8 @@ function showToast(message, type = 'info', duration = 3500) {
  * Global Theme Management (Dark / Light)
  */
 function initTheme() {
-  const savedTheme = localStorage.getItem('sketchai_theme') || 'dark';
+  const urlTheme = new URLSearchParams(window.location.search).get('theme');
+  const savedTheme = urlTheme || localStorage.getItem('sketchai_theme') || 'dark';
   applyTheme(savedTheme);
 
   document.querySelectorAll('.theme-toggle-btn').forEach(btn => {

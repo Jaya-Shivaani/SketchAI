@@ -3,146 +3,481 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SketchAI - Collaborative Drawing Game</title>
-  <link rel="stylesheet" href="/static/css/styles.css?v=3.0">
+  <title>SketchAI - Playful Collaborative Drawing Game</title>
+  
+  <!-- Instant Theme Detector in Head -->
+  <script>
+    (function() {
+      const urlTheme = new URLSearchParams(window.location.search).get('theme');
+      const saved = urlTheme || localStorage.getItem('sketchai_theme') || 'dark';
+      if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <!-- Base & Theme CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css?v=3.2">
+  <link rel="stylesheet" href="/static/css/lobby.css?v=1.2">
+  
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700;800&family=Lilita+One&family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="lobby-page">
+
+  <!-- Notebook Sketch Grid Overlay -->
+  <div class="notebook-grid-overlay" aria-hidden="true"></div>
 
   <!-- Background Floating Animated Particles Canvas -->
   <canvas id="bg-particle-canvas" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:0;"></canvas>
 
-  <!-- Navigation Bar -->
-  <header class="navbar">
-    <div class="brand">
-      <span class="brand-icon">🎨</span>
-      <span>SketchAI</span>
-    </div>
-    <nav class="nav-links">
-      <button class="theme-toggle-btn" title="Toggle Light / Dark Mode">
-        <span class="theme-toggle-icon">🌙</span>
-        <span class="theme-toggle-text">Dark</span>
-      </button>
-      <a href="/" class="nav-item active">Lobby</a>
-      <div id="nav-user-section" style="display:flex; align-items:center; gap:0.75rem;">
-        <button class="btn btn-secondary open-login-btn">Log In</button>
-        <button class="btn btn-primary open-register-btn">Sign Up</button>
-      </div>
-    </nav>
-  </header>
+  <!-- Confetti Canvas for Celebratory Room Creation -->
+  <canvas id="confetti-canvas"></canvas>
 
-  <!-- Clean, Elegant, Minimalist Lobby -->
-  <main class="hero-container">
-    <div class="clean-hero-header">
-      <h1 class="clean-title">🎨 SketchAI</h1>
-      <p class="clean-subtitle">
-        Real-time collaborative drawing and guessing game.
-      </p>
-    </div>
+  <!-- Top Right Melting Paint Drip Graphic -->
+  <svg class="paint-drip-svg" viewBox="0 0 240 180" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M0 0 H240 V65 C230 65 220 72 215 82 C210 92 205 130 195 130 C185 130 180 90 170 85 C160 80 155 110 145 110 C135 110 130 65 115 65 C100 65 95 155 80 155 C65 155 60 70 45 70 C30 70 25 105 15 105 C5 105 0 60 0 60 Z" fill="var(--paint-drip-color)" />
+    <!-- Glossy Highlights on Drips -->
+    <circle cx="80" cy="142" r="5" fill="white" opacity="0.4" />
+    <circle cx="195" cy="120" r="4" fill="white" opacity="0.4" />
+    <circle cx="145" cy="100" r="3.5" fill="white" opacity="0.4" />
+  </svg>
 
-    <!-- Quick Action Cards: Create & Join -->
-    <div class="cards-grid">
-      <!-- Create Room Card -->
-      <div class="feature-card">
-        <span class="card-icon">🚀</span>
-        <h2 class="card-title">Create a Game Room</h2>
-        <p class="card-desc">Start a new multiplayer room, customize the AI prompt category and round settings, and invite your friends!</p>
-        
-        <form id="create-room-form" style="margin-top:1.25rem;">
-          <div class="form-group">
-            <label class="form-label">Category Theme</label>
-            <select id="room-category" class="form-select">
-              <option value="Random">🎲 Random (All 5 Categories)</option>
-              <option value="Animal">🐾 Animals (Cat, Dog, Bird...)</option>
-              <option value="Food">🍕 Food (Pizza, Cake, Apple...)</option>
-              <option value="Vehicle">🚗 Vehicles (Car, Airplane...)</option>
-              <option value="Nature">🌲 Nature (Tree, Sun, Mountain...)</option>
-              <option value="Object">☕ Objects (Cup, Clock, Chair...)</option>
-            </select>
-          </div>
+  <!-- Floating Whimsical Props Layer -->
+  <div class="floating-props-layer" aria-hidden="true">
+    <div class="prop-star prop-star-1">✦</div>
+    <div class="prop-star prop-star-2">★</div>
+    <div class="prop-star prop-star-3">✦</div>
+    <div class="prop-star prop-star-4">★</div>
+    <div class="prop-blob prop-blob-1"></div>
+    <div class="prop-blob prop-blob-2"></div>
+    <div class="prop-blob prop-blob-3"></div>
+  </div>
 
-          <div class="form-group">
-            <label class="form-label">AI Prompt Difficulty</label>
-            <select id="room-difficulty" class="form-select">
-              <option value="easy">Easy (Classic shapes)</option>
-              <option value="medium" selected>Medium (Creative poses)</option>
-              <option value="hard">Hard (Detailed challenges)</option>
-            </select>
-          </div>
+  <!-- Playful Floating Pill Navbar -->
+  <header class="lobby-navbar">
+    <div class="lobby-nav-inner">
+      <!-- Brand Logo -->
+      <a href="/" class="lobby-brand" title="SketchAI Home">
+        <span class="brand-palette-icon">🎨</span>
+        <span>Sketch<span class="brand-text-ai">AI</span></span>
+      </a>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-            <div class="form-group">
-              <label class="form-label">Rounds</label>
-              <select id="room-rounds" class="form-select">
-                <option value="1">1 Round</option>
-                <option value="2">2 Rounds</option>
-                <option value="3" selected>3 Rounds</option>
-                <option value="5">5 Rounds</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Time / Round</label>
-              <select id="room-duration" class="form-select">
-                <option value="45">45 Seconds</option>
-                <option value="60" selected>60 Seconds</option>
-                <option value="90">90 Seconds</option>
-              </select>
-            </div>
-          </div>
+      <!-- Center Floating Pill Navigation -->
+      <nav class="lobby-nav-center">
+        <a href="/" class="lobby-nav-pill active">
+          <span>🏠</span> Home
+        </a>
+        <a href="/dashboard" class="lobby-nav-pill">
+          <span>🏆</span> Leaderboard
+        </a>
+        <a href="#how-to-play" class="lobby-nav-pill">
+          <span>💡</span> How to Play
+        </a>
+      </nav>
 
-          <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
-            Create Room & Play
-          </button>
-        </form>
-      </div>
+      <!-- Right Nav Controls (Theme Toggle & Auth) -->
+      <div class="lobby-nav-right">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" title="Toggle Light / Dark Mode">
+          <span class="theme-toggle-icon">🌙</span>
+          <span class="theme-toggle-text">Dark</span>
+        </button>
 
-      <!-- Join Room Card -->
-      <div class="feature-card">
-        <span class="card-icon">🔑</span>
-        <h2 class="card-title">Join Existing Room</h2>
-        <p class="card-desc">Have a room code from a friend? Enter it below to jump straight into the canvas battle!</p>
-
-        <form id="join-room-form" style="margin-top:1.25rem;">
-          <div class="form-group">
-            <label class="form-label">6-Character Room Code</label>
-            <input type="text" id="join-room-code" class="form-input" placeholder="e.g. SKETCH" maxlength="8" required style="text-transform:uppercase; font-weight:700; font-size:1.1rem; letter-spacing:1px;">
-          </div>
-          <button type="submit" class="btn btn-accent" style="width:100%; margin-top:1.8rem;">
-            Join Game Room
-          </button>
-        </form>
-
-        <div style="margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--border-color);">
-          <h4 style="font-size:0.95rem; color:var(--text-muted); margin-bottom:0.75rem;">🌟 How to Play:</h4>
-          <ul style="color:var(--text-muted); font-size:0.85rem; line-height:1.6; padding-left:1.2rem;">
-            <li>One player is chosen as the <strong>Drawer</strong> each round.</li>
-            <li>Other players type their guesses in the <strong>Chat</strong> box.</li>
-            <li>Earn bonus points the faster you guess the secret sketch!</li>
-            <li>Watch the <strong>AI Category Classifier</strong> predict live!</li>
-          </ul>
+        <!-- Auth Section: Populated by auth.js -->
+        <div id="nav-user-section" style="display:flex; align-items:center; gap:0.5rem;">
+          <button class="btn btn-secondary open-login-btn">Log In</button>
+          <button class="btn btn-primary open-register-btn">Sign Up</button>
         </div>
       </div>
     </div>
+  </header>
 
-    <!-- Features Overview -->
-    <div class="cards-grid">
-      <div class="feature-card">
-        <span class="card-icon">🧠</span>
-        <h3 class="card-title">K-Nearest Neighbors (KNN) ML</h3>
-        <p class="card-desc">Trained on thousands of QuickDraw sketches across 5 categories: Animal, Object, Food, Vehicle, Nature. Evaluates stroke density, bounding box aspect ratios, and curvature in real time.</p>
-      </div>
-      <div class="feature-card">
-        <span class="card-icon">✨</span>
-        <h3 class="card-title">Generative AI Prompts (Gemini)</h3>
-        <p class="card-desc">Every round features creative drawing prompts, fun thematic game descriptions, and unique constraints generated dynamically by Google Gemini LLM.</p>
-      </div>
-      <div class="feature-card">
-        <span class="card-icon">⚡</span>
-        <h3 class="card-title">Real-Time WebSockets & MongoDB</h3>
-        <p class="card-desc">Native FastAPI WebSockets broadcast every brush stroke instantaneously to all room members. Player ratings, histories, and leaderboards persist securely in MongoDB.</p>
-      </div>
+  <!-- Main Showcase Section -->
+  <main class="lobby-main">
+    <div class="lobby-layout-grid">
+
+      <!-- ===================================================================
+           LEFT COLUMN: HERO, FEATURE STICKERS, CAT MASCOT & LIVE DOODLE
+           =================================================================== -->
+      <section class="hero-col">
+
+        <!-- Tilted Tagline Ribbon -->
+        <div class="tagline-ribbon">
+          <span>✨</span>
+          <span>Draw • Guess • Have Fun</span>
+          <span>✨</span>
+        </div>
+
+        <!-- Big Playful Wordmark with Floating Crown -->
+        <div class="hero-title-box">
+          <div class="floating-crown" aria-hidden="true">👑</div>
+          <h1 class="hero-wordmark">
+            <span class="wordmark-sketch">Sketch</span><span class="wordmark-ai">AI</span>
+            <span class="wordmark-sparkle" aria-hidden="true">✦</span>
+          </h1>
+          <p class="hero-subtitle">
+            A real-time multiplayer drawing and guessing game powered by AI!
+          </p>
+          <div id="hero-game-description" style="font-size:0.86rem; color:var(--ink-dim); margin-top:0.25rem; font-style:italic;"></div>
+        </div>
+
+        <!-- 3 Glossy Feature Sticker Badges -->
+        <div class="feature-stickers-row">
+          <div class="sticker-badge">
+            <span class="sticker-icon">⚡</span>
+            <span>Real-Time Multiplayer</span>
+          </div>
+          <div class="sticker-badge">
+            <span class="sticker-icon">👥</span>
+            <span>Play with Friends</span>
+          </div>
+          <div class="sticker-badge">
+            <span class="sticker-icon">🎨</span>
+            <span>Unleash Your Creativity</span>
+          </div>
+        </div>
+
+        <!-- HERO STUDIO BOX: Mascot & Live Doodle Canvas Working Together! -->
+        <div class="hero-studio-box">
+          <div class="studio-row-main">
+
+            <!-- Friendly Mascot Illustration (Cat with Headphones & Giant Pencil) -->
+            <div class="mascot-illustration-box" title="SketchAI Mascot - DJ Whisker Pencil!">
+              <svg class="cat-mascot-svg" viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- Soft Desk Shadow -->
+                <ellipse cx="110" cy="186" rx="85" ry="12" fill="rgba(0,0,0,0.18)" />
+
+                <!-- Cat Body (Chubby & Warm White) -->
+                <path d="M60 140 C60 105 80 95 110 95 C140 95 160 105 160 140 C165 165 160 185 110 185 C60 185 55 165 60 140 Z" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+                <ellipse cx="110" cy="148" rx="35" ry="26" fill="#FDF4FF" />
+
+                <!-- Left Ear (Interactive Twitch) -->
+                <g class="mascot-ear-left">
+                  <polygon points="62,70 42,24 84,46" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+                  <polygon points="60,65 48,32 78,48" fill="#F472B6" opacity="0.65" />
+                </g>
+
+                <!-- Right Ear (Interactive Twitch) -->
+                <g class="mascot-ear-right">
+                  <polygon points="158,70 178,24 136,46" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+                  <polygon points="160,65 172,32 142,48" fill="#F472B6" opacity="0.65" />
+                </g>
+
+                <!-- Head -->
+                <ellipse cx="110" cy="78" rx="55" ry="46" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+
+                <!-- DJ Headphones Band -->
+                <path class="mascot-headphones" d="M52 74 C48 30 172 30 168 74" fill="none" stroke="#7C3AED" stroke-width="9" stroke-linecap="round" />
+                <!-- Headphones Left Ear-cup -->
+                <rect x="42" y="60" width="16" height="30" rx="8" fill="#06B6D4" stroke="#7C3AED" stroke-width="2" />
+                <rect x="52" y="65" width="6" height="20" rx="3" fill="#A78BFA" />
+                <!-- Headphones Right Ear-cup -->
+                <rect x="162" y="60" width="16" height="30" rx="8" fill="#06B6D4" stroke="#7C3AED" stroke-width="2" />
+                <rect x="162" y="65" width="6" height="20" rx="3" fill="#A78BFA" />
+
+                <!-- Cute Eyes (Blinking Animation) -->
+                <g class="mascot-eye" style="transform-origin: 90px 75px;">
+                  <circle cx="90" cy="75" r="5.5" fill="#1E1B4B" />
+                  <circle cx="88" cy="73" r="2" fill="#FFFFFF" />
+                </g>
+                <g class="mascot-eye" style="transform-origin: 130px 75px;">
+                  <circle cx="130" cy="75" r="5.5" fill="#1E1B4B" />
+                  <circle cx="128" cy="73" r="2" fill="#FFFFFF" />
+                </g>
+
+                <!-- Rosy Cheeks -->
+                <circle cx="75" cy="84" r="7" fill="#F472B6" opacity="0.5" />
+                <circle cx="145" cy="84" r="7" fill="#F472B6" opacity="0.5" />
+
+                <!-- Cat Nose & Mouth -->
+                <polygon points="110,81 106,85 114,85" fill="#F472B6" />
+                <path d="M110 85 Q110 91 104 91 M110 85 Q110 91 116 91" fill="none" stroke="#1E1B4B" stroke-width="2" stroke-linecap="round" />
+
+                <!-- Left Paw on Desk -->
+                <ellipse cx="80" cy="170" rx="14" ry="10" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" />
+
+                <!-- Giant Wooden Pencil held by Right Paw -->
+                <g class="mascot-pencil-group">
+                  <!-- Pencil Shaft -->
+                  <polygon points="140,175 190,75 204,82 154,182" fill="#FACC15" stroke="#CA8A04" stroke-width="1.5" />
+                  <polygon points="144,177 194,77 198,79 148,179" fill="#FEF08A" />
+                  <!-- Pencil Tip Wood -->
+                  <polygon points="140,175 154,182 134,196" fill="#FDE68A" stroke="#CA8A04" stroke-width="1.5" />
+                  <!-- Graphite Lead -->
+                  <polygon points="137,190 142,192 134,196" fill="#1E1B4B" />
+                  <!-- Metal Ferrule & Pink Eraser -->
+                  <polygon points="190,75 204,82 208,74 194,67" fill="#CBD5E1" stroke="#94A3B8" stroke-width="1" />
+                  <polygon points="194,67 208,74 216,58 202,51" fill="#F472B6" stroke="#DB2777" stroke-width="1" />
+                </g>
+
+                <!-- Right Paw grasping pencil -->
+                <ellipse cx="148" cy="165" rx="14" ry="11" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" />
+              </svg>
+            </div>
+
+            <!-- Live Drawing Canvas (Cat's Sketchpad) -->
+            <div class="studio-doodle-right">
+              <div class="live-doodle-header">
+                <div class="live-tag">
+                  <span class="live-dot"></span>
+                  <span>LIVE DEMO</span>
+                </div>
+                <div class="doodle-artist-info">
+                  🎨 Drawing: <strong style="color:var(--toy-purple-light);">Cat Face</strong>
+                </div>
+              </div>
+
+              <!-- Animated Mini Doodle Canvas -->
+              <div class="doodle-canvas-box">
+                <svg class="animated-sketch-svg" viewBox="0 0 160 130" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Head Outline -->
+                  <path class="sketch-path" d="M35 55 C35 35 50 25 60 40 C70 42 90 42 100 40 C110 25 125 35 125 55 C135 85 115 115 80 115 C45 115 25 85 35 55 Z" />
+                  <!-- Eyes & Nose -->
+                  <circle cx="62" cy="70" r="4.5" fill="var(--toy-purple)" class="sketch-path" style="animation-delay: 1.5s;" />
+                  <circle cx="98" cy="70" r="4.5" fill="var(--toy-purple)" class="sketch-path" style="animation-delay: 1.6s;" />
+                  <path class="sketch-path" d="M80 77 L76 83 L84 83 Z" style="animation-delay: 2s;" />
+                  <path class="sketch-path" d="M80 83 Q80 92 73 92 M80 83 Q80 92 87 92" style="animation-delay: 2.3s;" />
+                  <!-- Whiskers -->
+                  <path class="sketch-path sketch-path-accent" d="M48 78 L26 73 M48 83 L24 85 M112 78 L134 73 M112 83 L136 85" />
+                  <!-- Inner Ears -->
+                  <path class="sketch-path sketch-path-yellow" d="M48 42 L56 50 M112 42 L104 50" />
+                </svg>
+              </div>
+
+              <!-- Live AI Category Classifier Bar -->
+              <div class="doodle-ai-bar">
+                <div class="ai-bar-header">
+                  <span class="ai-bar-title">
+                    <span>🤖</span> AI Classifier
+                  </span>
+                  <span class="ai-prediction-pill">Cat 94%</span>
+                </div>
+                <div class="ai-progress-track">
+                  <div class="ai-progress-fill"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Studio Strip: Chat Bubbles, Let's Play note & Players Online -->
+          <div class="studio-bottom-strip">
+            <div class="fake-chat-stream">
+              <div class="chat-bubble chat-bubble-1">
+                <span>💭 "Dog? 🐶"</span>
+              </div>
+              <div class="chat-bubble chat-bubble-2">
+                <span>🎉 "Cat!! ✅ +100"</span>
+              </div>
+            </div>
+
+            <div class="lets-play-note">
+              <span>📝 Let's Play! ♡</span>
+            </div>
+
+            <div class="social-live-pill">
+              <div class="avatar-stack">
+                <div class="avatar-stack-item">🐱</div>
+                <div class="avatar-stack-item">🦊</div>
+                <div class="avatar-stack-item">🐼</div>
+              </div>
+              <span>🟢 <strong>52</strong> playing</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================
+           RIGHT COLUMN: 3D ACTION CARDS (CREATE ROOM & JOIN ROOM)
+           =================================================================== -->
+      <section class="actions-col">
+
+        <!-- =================================================================
+             CARD 1: CREATE ROOM
+             ================================================================= -->
+        <div class="action-toy-card card-create">
+          <!-- Top Badge Pill -->
+          <div class="card-pill-header pill-purple">
+            <span>🪄</span> Create Room
+          </div>
+
+          <!-- 3D Paint Palette & Brush Visual Centerpiece -->
+          <div class="card-visual-centerpiece">
+            <svg class="palette-illustration" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+              <!-- Wooden Palette with Thumb Hole -->
+              <path d="M20 50 C15 25 45 10 75 15 C105 20 115 50 100 75 C85 100 45 95 30 85 C22 80 15 65 20 50 Z" fill="#FDE68A" stroke="#D97706" stroke-width="3" />
+              <!-- Palette Depth Highlight -->
+              <path d="M25 50 C22 30 48 18 73 22" fill="none" stroke="#FEF3C7" stroke-width="3" stroke-linecap="round" />
+              <!-- Thumb Hole -->
+              <ellipse cx="85" cy="72" rx="9" ry="7" fill="var(--card-glass-bg)" stroke="#D97706" stroke-width="2.5" />
+              <!-- Colorful Paint Blobs -->
+              <circle cx="40" cy="30" r="7" fill="#EF4444" />
+              <circle cx="65" cy="25" r="7" fill="#06B6D4" />
+              <circle cx="90" cy="35" r="7" fill="#10B981" />
+              <circle cx="42" cy="55" r="7" fill="#EC4899" />
+              <circle cx="48" cy="75" r="7" fill="#8B5CF6" />
+              <!-- Wooden Brush resting diagonally -->
+              <g transform="rotate(-30 70 50)">
+                <rect x="68" y="10" width="7" height="65" rx="3.5" fill="#92400E" stroke="#78350F" stroke-width="1.5" />
+                <rect x="68" y="72" width="7" height="10" fill="#94A3B8" />
+                <path d="M68 82 Q71.5 94 75 82 Z" fill="#1E1B4B" />
+              </g>
+            </svg>
+          </div>
+
+          <p class="card-instructions">
+            Start a new multiplayer room, customize the game and invite your friends!
+          </p>
+
+          <!-- Create Room Form (Preserves exact IDs & values) -->
+          <form id="create-room-form">
+            <div class="toy-form-group">
+              <label class="toy-form-label" for="room-category">
+                <span>🎨</span> Category Theme
+              </label>
+              <div class="toy-select-wrapper">
+                <select id="room-category" class="toy-select">
+                  <option value="Random">🎲 Random (All 5 Categories)</option>
+                  <option value="Animal">🐾 Animals (Cat, Dog, Bird...)</option>
+                  <option value="Food">🍕 Food (Pizza, Cake, Apple...)</option>
+                  <option value="Vehicle">🚗 Vehicles (Car, Airplane...)</option>
+                  <option value="Nature">🌲 Nature (Tree, Sun, Mountain...)</option>
+                  <option value="Object">☕ Objects (Cup, Clock, Chair...)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toy-form-group">
+              <label class="toy-form-label" for="room-difficulty">
+                <span>⚡</span> AI Prompt Difficulty
+              </label>
+              <div class="toy-select-wrapper">
+                <select id="room-difficulty" class="toy-select">
+                  <option value="easy">🟢 Easy (Classic shapes)</option>
+                  <option value="medium" selected>🟡 Medium (Creative poses)</option>
+                  <option value="hard">🔴 Hard (Detailed challenges)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="two-col-grid">
+              <div class="toy-form-group">
+                <label class="toy-form-label" for="room-rounds">
+                  <span>🔄</span> Rounds
+                </label>
+                <div class="toy-select-wrapper">
+                  <select id="room-rounds" class="toy-select">
+                    <option value="1">1 Round</option>
+                    <option value="2">2 Rounds</option>
+                    <option value="3" selected>3 Rounds</option>
+                    <option value="5">5 Rounds</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="toy-form-group">
+                <label class="toy-form-label" for="room-duration">
+                  <span>⏱️</span> Time / Round
+                </label>
+                <div class="toy-select-wrapper">
+                  <select id="room-duration" class="toy-select">
+                    <option value="45">45 Seconds</option>
+                    <option value="60" selected>60 Seconds</option>
+                    <option value="90">90 Seconds</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-toy-3d btn-toy-purple">
+              <span>▶</span> Create Room
+            </button>
+          </form>
+        </div>
+
+        <!-- =================================================================
+             CARD 2: JOIN ROOM
+             ================================================================= -->
+        <div class="action-toy-card card-join">
+          <!-- Top Badge Pill -->
+          <div class="card-pill-header pill-cyan">
+            <span>👥</span> Join Room
+          </div>
+
+          <!-- 3D Arched Door with Star & Enter Sign Visual Centerpiece -->
+          <div class="card-visual-centerpiece">
+            <div class="door-illustration-box">
+              <svg class="door-frame-svg" viewBox="0 0 120 105" xmlns="http://www.w3.org/2000/svg">
+                <!-- Fluffy Clouds Base -->
+                <ellipse cx="60" cy="98" rx="55" ry="10" fill="#FFFFFF" opacity="0.9" />
+                <ellipse cx="30" cy="95" rx="20" ry="8" fill="#FFFFFF" />
+                <ellipse cx="90" cy="95" rx="20" ry="8" fill="#FFFFFF" />
+
+                <!-- Outer Stone Arch -->
+                <path d="M22 95 V45 C22 20 40 10 60 10 C80 10 98 20 98 45 V95 Z" fill="#6B21A8" stroke="#581C87" stroke-width="3" />
+
+                <!-- Glowing Interior Room Light (Revealed on Open) -->
+                <path class="door-glow-interior" d="M26 95 V46 C26 24 42 16 60 16 C78 16 94 24 94 46 V95 Z" fill="#FDE047" opacity="0.9" />
+
+                <!-- Swinging Door Leaf -->
+                <g class="door-leaf">
+                  <path d="M26 95 V46 C26 24 42 16 60 16 C78 16 94 24 94 46 V95 Z" fill="#9333EA" stroke="#7E22CE" stroke-width="2.5" />
+                  <!-- Door Window with Golden Star -->
+                  <circle cx="60" cy="46" r="14" fill="#581C87" />
+                  <text x="60" y="52" font-size="16" text-anchor="middle" fill="#FACC15">★</text>
+                  <!-- Golden Door Knob -->
+                  <circle cx="85" cy="68" r="4.5" fill="#FACC15" stroke="#CA8A04" stroke-width="1.5" />
+                </g>
+
+                <!-- Wooden "Enter" Hanging Sign on Arch -->
+                <g transform="translate(86, 42)">
+                  <rect x="0" y="0" width="30" height="15" rx="4" fill="#D97706" stroke="#92400E" stroke-width="1" />
+                  <text x="15" y="11" font-family="'Lilita One', sans-serif" font-size="9" text-anchor="middle" fill="#FFFFFF">ENTER</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <p class="card-instructions">
+            Have a room code from a friend? Enter it below to jump straight into the canvas battle!
+          </p>
+
+          <!-- Join Room Form (Preserves exact IDs & inputs) -->
+          <form id="join-room-form">
+            <div class="toy-form-group">
+              <label class="toy-form-label" for="join-room-code">
+                <span>🔑</span> Room Code
+              </label>
+              <input type="text" id="join-room-code" class="toy-input room-code-input" placeholder="SKETCH" maxlength="8" required autocomplete="off" spellcheck="false">
+            </div>
+
+            <button type="submit" class="btn-toy-3d btn-toy-cyan">
+              <span>➔</span> Join Game
+            </button>
+          </form>
+
+          <!-- Yellow Sticky-Note "How to Play" Panel -->
+          <div class="sticky-how-to-play" id="how-to-play">
+            <div class="washi-tape-strip" aria-hidden="true"></div>
+            <div class="sticky-title">
+              <span>💡</span> How to Play?
+            </div>
+            <ul class="sticky-list">
+              <li>One player is chosen as <strong>Drawer</strong> each round.</li>
+              <li>Others guess in the <strong>Chat</strong> box live.</li>
+              <li>Earn bonus points for faster correct guesses!</li>
+              <li>Watch the <strong>AI Classifier</strong> guess along!</li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
     </div>
   </main>
 
@@ -196,9 +531,56 @@
     <p>AI-Enhanced Collaborative Drawing Game Platform &copy; 2026. Built with FastAPI, WebSockets, scikit-learn (KNN), and Gemini API.</p>
   </footer>
 
-  <script src="/static/js/api.js?v=3.0"></script>
-  <script src="/static/js/auth.js?v=3.0"></script>
+  <!-- Scripts -->
+  <script src="/static/js/api.js?v=3.2"></script>
+  <script src="/static/js/auth.js?v=3.2"></script>
   <script>
+    // Confetti burst utility on successful room creation
+    function fireConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = window.innerWidth;
+      const h = canvas.height = window.innerHeight;
+      const pieces = [];
+      const colors = ['#7C3AED', '#EC4899', '#06B6D4', '#FACC15', '#10B981', '#A78BFA'];
+
+      for (let i = 0; i < 75; i++) {
+        pieces.push({
+          x: w / 2 + (Math.random() - 0.5) * 200,
+          y: h / 2,
+          w: Math.random() * 9 + 5,
+          h: Math.random() * 5 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 16,
+          rot: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 10
+        });
+      }
+
+      let frame = 0;
+      function renderConfetti() {
+        ctx.clearRect(0, 0, w, h);
+        pieces.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.45;
+          p.rot += p.rotSpeed;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+        frame++;
+        if (frame < 60) requestAnimationFrame(renderConfetti);
+        else ctx.clearRect(0, 0, w, h);
+      }
+      renderConfetti();
+    }
+
     // Handle create room
     document.getElementById('create-room-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -214,7 +596,8 @@
           max_rounds: rounds,
           round_duration: duration
         });
-        showToast(`Room created: ${room.room_code}! Redirecting...`, 'success');
+        fireConfetti();
+        showToast(`🎉 Room created: ${room.room_code}! Redirecting...`, 'success');
         setTimeout(() => {
           window.location.href = `/game?room=${room.room_code}`;
         }, 800);
@@ -240,14 +623,23 @@
       }
     });
 
+    // Auto-uppercase room code input
+    const joinInput = document.getElementById('join-room-code');
+    if (joinInput) {
+      joinInput.addEventListener('input', () => {
+        joinInput.value = joinInput.value.toUpperCase();
+      });
+    }
+
     // Load AI game description
     api.getGameDescription().then(data => {
       if (data && data.description) {
-        document.getElementById('hero-game-description').textContent = data.description;
+        const descEl = document.getElementById('hero-game-description');
+        if (descEl) descEl.textContent = data.description;
       }
     }).catch(() => {});
 
-    // --- Interactive Floating Animated Drawing Particles Canvas ---
+    // Interactive Floating Animated Particles Canvas
     (function initParticleCanvas() {
       const canvas = document.getElementById('bg-particle-canvas');
       if (!canvas) return;
@@ -262,13 +654,13 @@
 
       const particles = [];
       const colors = ['rgba(167, 139, 250, 0.45)', 'rgba(56, 189, 248, 0.45)', 'rgba(236, 72, 153, 0.4)', 'rgba(251, 191, 36, 0.35)'];
-      for (let i = 0; i < 45; i++) {
+      for (let i = 0; i < 40; i++) {
         particles.push({
           x: Math.random() * w,
           y: Math.random() * h,
-          r: Math.random() * 4 + 2,
-          dx: (Math.random() - 0.5) * 0.9,
-          dy: (Math.random() - 0.5) * 0.9,
+          r: Math.random() * 3 + 2,
+          dx: (Math.random() - 0.5) * 0.7,
+          dy: (Math.random() - 0.5) * 0.7,
           color: colors[Math.floor(Math.random() * colors.length)],
           angle: Math.random() * Math.PI * 2,
           speed: Math.random() * 0.02 + 0.01
@@ -278,12 +670,11 @@
       function animate() {
         ctx.clearRect(0, 0, w, h);
 
-        // Draw connections between close particles
         for (let i = 0; i < particles.length; i++) {
           for (let j = i + 1; j < particles.length; j++) {
             const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
-            if (dist < 130) {
-              ctx.strokeStyle = `rgba(167, 139, 250, ${0.2 * (1 - dist / 130)})`;
+            if (dist < 120) {
+              ctx.strokeStyle = `rgba(167, 139, 250, ${0.15 * (1 - dist / 120)})`;
               ctx.lineWidth = 1;
               ctx.beginPath();
               ctx.moveTo(particles[i].x, particles[i].y);
@@ -293,7 +684,6 @@
           }
         }
 
-        // Draw and update particles
         particles.forEach(p => {
           p.x += p.dx;
           p.y += p.dy;
@@ -305,10 +695,8 @@
           if (p.y > h) p.y = 0;
 
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r + Math.sin(p.angle) * 1.5, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.r + Math.sin(p.angle) * 1.2, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = p.color;
           ctx.fill();
         });
 
@@ -316,7 +704,17 @@
       }
       animate();
     })();
+
+    // Subtle Parallax on Mouse Move
+    window.addEventListener('mousemove', (e) => {
+      const moveX = (e.clientX - window.innerWidth / 2) * 0.015;
+      const moveY = (e.clientY - window.innerHeight / 2) * 0.015;
+      const stars = document.querySelectorAll('.prop-star');
+      stars.forEach((star, idx) => {
+        const factor = (idx + 1) * 0.4;
+        star.style.transform = `translate(${moveX * factor}px, ${moveY * factor}px)`;
+      });
+    });
   </script>
 </body>
 </html>
-
